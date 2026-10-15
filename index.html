@@ -530,8 +530,16 @@
 
             <!-- Rule Text Display -->
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed whitespace-pre-line" id="rule-modal-text">
-                - สินค้ามีประกันตามเงื่อนไขที่กำหนด
-                - ห้ามแก้ไขข้อมูลก่อนได้รับอนุญาต
+                - รบกวนลูกค้าเข้าภายใน 24 ชม
+🟢กรณีที่รับเคลมสินค้า
+  - เข้าครั้งแรกบิน ภายในเวลาเคลม
+  หรือ กรณีที่ประกันหมด 19:00 แต่ลูกค้าเข้าครั้งแรกเวลา 16:00 แล้วเฟสบินทันที ทักหาแอดมิน แต่แอดมินตอบ 20:30 ( ตอบหลังเวลาเคลม ) กรณีนี้จะเคลมให้
+  - เข้าครั้งแรก รหัสผิด 2ชั้นผิด
+
+🔴กรณีที่ไม่รับเคลมสินค้า
+  - เข้าหลังเวลาเคลมแล้วแอคบิน
+  - เข้าแอคครั้งแรกไปแล้ว หลังจากนั้น 3 ชั่วโมง แอคบิน หรือล็อคขึ้นมา ทางร้านไม่รับเคลม
+                - 
             </div>
 
             <div class="flex items-center gap-2 pt-2">
@@ -589,10 +597,10 @@
         // INITIAL LOCAL APP STATE (Default Data)
         // ==========================================
         const DEFAULT_STORE_CONFIG = {
-            bankName: 'ธนาคารกสิกรไทย (K-Bank)',
+            bankName: 'ธนาคารกรุงไทย (KTB)',
             accountName: 'PPXLY STORE ACCOUNT',
-            accountNumber: '999-8-76543-2',
-            bankImgUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=60',
+            accountNumber: '406-3-10295-5',
+            bankImgUrl: 'https://i.ibb.co/mC7J3jG8/IMG-2414.jpg',
             ruleText: '1. เมื่อซื้อแล้วสินค้าไม่สามารถเปลี่ยนคืนเป็นเงินสดได้\n2. ประกันรหัส 24 ชม. หลังจากส่งมอบ\n3. ห้ามเปลี่ยนรหัสผ่านหรือข้อมูลการชำระเงินในบัญชี',
             ruleImgUrl: ''
         };
@@ -600,10 +608,10 @@
         const INITIAL_PRODUCTS = [
             {
                 id: 'prod-1',
-                title: 'Netflix Premium 4K (1 Month)',
-                price: 139,
-                image: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500&auto=format&fit=crop&q=60',
-                description: 'จอส่วนตัว คมชัด 4K รับประกันตลอดการใช้งาน 30 วัน',
+                title: 'Facebook เพื่อน 100 ปี25',
+                price: 150,
+                image: 'https://i.ibb.co/hFx7d8Tb/IMG-2411.jpg',
+                description: 'เฟสครบปีทุกตัว มี2ชั้น ยกฮอตเมล เพจได้ ยิงแอดได้',
                 keys: [
                     { id: 'k1', email: 'netflix1@ppxly.com', twoFactor: 'Pass9876', backupEmail: 'rec1@ppxly.com', isUsed: false },
                     { id: 'k2', email: 'netflix2@ppxly.com', twoFactor: 'Pass5432', backupEmail: 'rec2@ppxly.com', isUsed: false }
@@ -611,17 +619,17 @@
             },
             {
                 id: 'prod-2',
-                title: 'YouTube Premium Private (1 Month)',
-                price: 59,
-                image: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60',
-                description: 'ดึงเข้าครอบครัว ไม่มีโฆษณาคั่น ฟังเพลง YouTube Music ได้',
+                title: 'Facebook เปล่า (ปี25)',
+                price: 75,
+                image: '"https://i.ibb.co/PGN4zCqP/IMG-2407.jpg',
+                description: 'เฟสครบปีทุกตัว มี2ชั้น ยกฮอต เพจได้ ยิงแอดได้',
                 keys: [
                     { id: 'k3', email: 'yt1@ppxly.com', twoFactor: 'YtPass111', backupEmail: 'ytrec1@ppxly.com', isUsed: false }
                 ]
             },
             {
                 id: 'prod-3',
-                title: 'Canva Pro (1 Year)',
+                title: 'Hotmail',
                 price: 199,
                 image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=500&auto=format&fit=crop&q=60',
                 description: 'สิทธิ์ใช้งานปลดล็อกทุกเทมเพลต ฟอนต์ และมัลติมีเดีย Pro',
