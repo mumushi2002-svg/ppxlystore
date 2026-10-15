@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPXLYSTORE - จำหน่าย Account & รับจัดหาทุกแพลตฟอร์ม</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        pastel: {
+                            pink: '#FFD6E0',
+                            'pink-dark': '#FF9EBB',
+                            purple: '#E8D7FF',
+                            'purple-dark': '#B892FF',
+                            yellow: '#FFF3B0',
+                            'yellow-dark': '#FFDE59',
+                            bg: '#FFF9FB'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Kanit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Kanit -->
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Kanit', sans-serif; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+        }
+        /* Custom scrollbar for aesthetic */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF9EBB;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #B892FF;
+        }
+    </style>
+</head>
+<body class="min-h-full flex flex-col bg-slate-50 text-slate-800 antialiased selection:bg-pastel-pink-dark selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Main Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-pink-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo & Brand Name -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('shop')">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pastel-pink-dark via-pastel-purple-dark to-pastel-yellow-dark flex items-center justify-center text-white shadow-md shadow-pink-200 hover:scale-105 transition-transform">
+                        <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-black bg-gradient-to-r from-pink-500 via-purple-600 to-amber-500 bg-clip-text text-transparent">
+                            PPXLYSTORE
+                        </span>
+                        <p class="text-xs text-slate-400 font-normal">จำหน่าย Account / รับจัดหาทุกแพลตฟอร์ม</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs (Desktop) -->
+                <nav class="hidden md:flex items-center gap-2 bg-pastel-bg p-1.5 rounded-full border border-pink-100">
+                    <button onclick="switchTab('shop')" id="nav-shop" class="px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 bg-white text-purple-700 shadow-sm">
+                        <i data-lucide="store" class="w-4 h-4"></i> หน้าร้านค้า
+                    </button>
+                    <button onclick="switchTab('topup')" id="nav-topup" class="px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 text-slate-600 hover:text-purple-600">
+                        <i data-lucide="wallet" class="w-4 h-4"></i> เติมเครดิต
+                    </button>
+                    <button onclick="switchTab('my-orders')" id="nav-my-orders" class="px-5 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 text-slate-600 hover:text-purple-600">
+                        <i data-lucide="shopping-basket" class="w-4 h-4"></i> คำสั่งซื้อของฉัน
+                    </button>
+                </nav>
+
+                <!-- User Profile / Auth Action Area -->
+                <div class="flex items-center gap-3">
+                    <div id="user-info-bar" class="hidden flex items-center gap-3 bg-purple-50 px-4 py-2 rounded-2xl border border-purple-100">
+                        <div class="text-right">
+                            <div id="display-username" class="text-xs font-bold text-slate-700">User</div>
+                            <div class="text-xs text-purple-600 font-extrabold flex items-center gap-1">
+                                <i data-lucide="coins" class="w-3.5 h-3.5 text-amber-500"></i>
+                                <span id="display-credit">0.00</span> ฿
+                            </div>
+                        </div>
+                        <button onclick="logout()" title="ออกจากระบบ" class="text-slate-400 hover:text-red-500 p-1.5 rounded-xl hover:bg-white transition-all">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- Auth Button (Shown when not logged in) -->
+                    <button id="btn-login-modal" onclick="openAuthModal()" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-pink-400 to-purple-500 hover:from-pink-500 hover:to-purple-600 text-white font-medium text-sm shadow-md shadow-pink-200 transition-all flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4"></i> เข้าสู่ระบบ / สมัครสมาชิก
+                    </button>
+
+                    <!-- Admin Switch Button -->
+                    <button onclick="promptAdminLogin()" class="px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-all flex items-center gap-1.5 font-bold text-xs" title="เข้าสู่ระบบแอดมิน">
+                        <i data-lucide="shield-check" class="w-5 h-5 text-purple-600"></i>
+                        <span>แอดมิน</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Bottom Nav -->
+        <div class="md:hidden flex justify-around border-t border-slate-100 bg-white py-2 px-4">
+            <button onclick="switchTab('shop')" class="flex flex-col items-center gap-1 text-xs text-slate-600 font-medium">
+                <i data-lucide="store" class="w-5 h-5"></i> ร้านค้า
+            </button>
+            <button onclick="switchTab('topup')" class="flex flex-col items-center gap-1 text-xs text-slate-600 font-medium">
+                <i data-lucide="wallet" class="w-5 h-5"></i> เติมเงิน
+            </button>
+            <button onclick="switchTab('my-orders')" class="flex flex-col items-center gap-1 text-xs text-slate-600 font-medium">
+                <i data-lucide="shopping-basket" class="w-5 h-5"></i> คำสั่งซื้อ
+            </button>
+            <button onclick="promptAdminLogin()" class="flex flex-col items-center gap-1 text-xs text-purple-600 font-bold">
+                <i data-lucide="shield-check" class="w-5 h-5"></i> แอดมิน
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- SECTION 1: USER SHOP PAGE -->
+        <section id="view-shop" class="space-y-6">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pastel-pink via-pastel-purple to-pastel-yellow p-8 md:p-12 shadow-sm border border-white">
+                <div class="relative z-10 max-w-xl">
+                    <span class="inline-block px-3 py-1 rounded-full bg-white/80 text-purple-700 text-xs font-semibold mb-3 border border-purple-200">
+                        ✨ ยินดีต้อนรับสู่ PPXLYSTORE
+                    </span>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 leading-tight mb-3">
+                        จำหน่าย Account คุณภาพ <br>
+                        <span class="text-purple-600">และรับจัดหาทุกแพลตฟอร์ม</span>
+                    </h1>
+                    <p class="text-sm text-slate-600 leading-relaxed mb-6">
+                        ส่งไว ปลอดภัย บริการตลอด 24 ชม. เลือกซื้อสินค้าที่ต้องการแล้วรับรหัสใช้งานได้ทันทีหลังชำระเงิน
+                    </p>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="switchTab('topup')" class="px-6 py-3 rounded-2xl bg-white hover:bg-purple-50 text-purple-700 font-semibold text-sm shadow-sm transition-all flex items-center gap-2">
+                            <i data-lucide="plus-circle" class="w-4 h-4 text-purple-500"></i> เติมเครดิตเลย
+                        </button>
+                    </div>
+                </div>
+                <!-- Decorative Elements -->
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 rounded-full bg-white/30 blur-2xl"></div>
+                <div class="absolute right-20 top-10 text-pink-300 opacity-40">
+                    <i data-lucide="sparkles" class="w-32 h-32"></i>
+                </div>
+            </div>
+
+            <!-- Shop Catalog Section -->
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="grid" class="w-6 h-6 text-pink-500"></i> รายการสินค้าทั้งหมด
+                        </h2>
+                        <p class="text-xs text-slate-500">เลือกสินค้าที่คุณต้องการเพื่อสั่งซื้อระบบอัตโนมัติ</p>
+                    </div>
+                </div>
+
+                <!-- Products Grid -->
+                <div id="products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Dynamic Product Cards will be rendered here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: TOPUP PAGE -->
+        <section id="view-topup" class="hidden max-w-2xl mx-auto space-y-6">
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-pink-100 shadow-sm space-y-6">
+                <div class="text-center space-y-2">
+                    <div class="w-16 h-16 rounded-2xl bg-pastel-purple/50 mx-auto flex items-center justify-center text-purple-600 mb-2">
+                        <i data-lucide="wallet" class="w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800">เติมเครดิตเข้าเว็บ</h2>
+                    <p class="text-sm text-slate-500">โอนเงินตามบัญชีด้านล่าง แล้วแจ้งโอนเพื่อรอแอดมินอนุมัติ</p>
+                </div>
+
+                <!-- Bank Info Box -->
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100 space-y-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-purple-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+                            <i data-lucide="landmark" class="w-7 h-7"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div id="bank-name-display" class="text-xs font-semibold text-purple-600 uppercase">ธนาคารกรุงไทย</div>
+                            <div id="account-name-display" class="text-base font-bold text-slate-800">PPXLY STORE ACCOUNT</div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between bg-white p-3.5 rounded-xl border border-purple-100">
+                        <div>
+                            <span class="text-xs text-slate-400 block">เลขที่บัญชี</span>
+                            <span id="account-number-display" class="font-mono font-bold text-lg text-slate-800">406-3-10295-5</span>
+                        </div>
+                        <button onclick="copyToClipboard('account-number-display', 'คัดลอกเลขบัญชีเรียบร้อย!')" class="px-4 py-2 rounded-lg bg-pastel-purple text-purple-800 hover:bg-pastel-purple-dark hover:text-white transition-colors text-xs font-semibold flex items-center gap-1.5">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> คัดลอกเลขบัญชี
+                        </button>
+                    </div>
+
+                    <!-- Payment QR Image if provided by admin -->
+                    <div id="topup-bank-img-container" class="hidden text-center pt-2">
+                        <img id="topup-bank-img" src="" alt="QR Code" class="max-h-56 mx-auto rounded-xl border shadow-sm">
+                    </div>
+                </div>
+
+                <!-- Topup Form -->
+                <form id="topup-form" onsubmit="handleTopupSubmit(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">จำนวนเงินที่โอน (บาท) *</label>
+                        <input type="number" id="topup-amount" step="0.01" min="1" required placeholder="เช่น 100.00" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">เวลาที่โอนเงินในสลิป *</label>
+                        <input type="text" id="topup-time" required placeholder="เช่น 14:25 น." class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">หมายเหตุเพิ่มเติม / URL สลิป (ถ้ามี)</label>
+                        <input type="text" id="topup-note" placeholder="ข้อความถึงแอดมิน" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-400 text-sm">
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="send" class="w-4 h-4"></i> แจ้งเติมเครดิต
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- SECTION 3: MY ORDERS PAGE -->
+        <section id="view-my-orders" class="hidden space-y-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="shopping-basket" class="w-6 h-6 text-purple-500"></i> คำสั่งซื้อของฉัน
+                    </h2>
+                    <p class="text-xs text-slate-500">รายการสั่งซื้อและรหัสสินค้าของคุณทั้งหมด</p>
+                </div>
+            </div>
+
+            <div id="orders-list-container" class="space-y-4">
+                <!-- Orders cards will be rendered dynamically -->
+            </div>
+        </section>
+
+        <!-- SECTION 4: ADMIN DASHBOARD -->
+        <section id="view-admin" class="hidden space-y-6">
+            <!-- Admin Header -->
+            <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 rounded-3xl flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-400 text-slate-900 flex items-center justify-center font-bold">
+                        <i data-lucide="shield-check" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">ระบบจัดการหลังบ้าน (Admin Control)</h2>
+                        <p class="text-xs text-slate-400">เข้าใช้งานด้วยสิทธิ์แอดมินสูงสุด</p>
+                    </div>
+                </div>
+                <button onclick="exitAdmin()" class="px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-600 text-xs font-semibold text-slate-200 flex items-center gap-2">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> ออกจากระบบแอดมิน
+                </button>
+            </div>
+
+            <!-- Admin Nav Tabs -->
+            <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
+                <button onclick="switchAdminTab('account')" id="admin-tab-account" class="px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 bg-purple-600 text-white">
+                    <i data-lucide="landmark" class="w-4 h-4"></i> ตั้งค่าบัญชีร้าน
+                </button>
+                <button onclick="switchAdminTab('topups')" id="admin-tab-topups" class="px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 text-slate-600 hover:bg-slate-100">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i> อนุมัติการเติมเครดิต <span id="pending-topups-badge" class="hidden bg-red-500 text-white rounded-full px-2 py-0.5 text-[10px]">0</span>
+                </button>
+                <button onclick="switchAdminTab('products')" id="admin-tab-products" class="px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 text-slate-600 hover:bg-slate-100">
+                    <i data-lucide="package" class="w-4 h-4"></i> ตั้งค่าสินค้า & สต็อก
+                </button>
+                <button onclick="switchAdminTab('rules')" id="admin-tab-rules" class="px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 text-slate-600 hover:bg-slate-100">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> ตั้งค่ากฎร้านค้า
+                </button>
+                <button onclick="switchAdminTab('deliver')" id="admin-tab-deliver" class="px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 text-slate-600 hover:bg-slate-100">
+                    <i data-lucide="send" class="w-4 h-4"></i> ยืนยันการส่งรหัสให้ลูกค้า <span id="pending-orders-badge" class="hidden bg-amber-500 text-white rounded-full px-2 py-0.5 text-[10px]">0</span>
+                </button>
+            </div>
+
+            <!-- ADMIN TAB 1: STORE BANK ACCOUNT SETTINGS -->
+            <div id="admin-view-account" class="bg-white p-6 rounded-3xl border border-slate-200 space-y-4">
+                <h3 class="text-lg font-bold text-slate-800">ตั้งค่าบัญชีธนาคารสำหรับรับโอนเงิน</h3>
+                <form onsubmit="saveBankSettings(event)" class="space-y-4 max-w-xl">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">ชื่อธนาคาร</label>
+                        <input type="text" id="admin-bank-name" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">ชื่อบัญชีร้านค้า</label>
+                        <input type="text" id="admin-account-name" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">เลขที่บัญชี</label>
+                        <input type="text" id="admin-account-number" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">URL รูปภาพ QR Code / สแกนจ่าย (ถ้ามี)</label>
+                        <input type="text" id="admin-bank-img-url" placeholder="https://example.com/qr.png" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                    </div>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm transition-all">
+                        บันทึกข้อมูลบัญชี
+                    </button>
+                </form>
+            </div>
+
+            <!-- ADMIN TAB 2: TOPUP APPROVALS -->
+            <div id="admin-view-topups" class="hidden bg-white p-6 rounded-3xl border border-slate-200 space-y-4">
+                <h3 class="text-lg font-bold text-slate-800">รายการแจ้งเติมเครดิตที่รออนุมัติ</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-slate-500 font-medium">
+                            <tr>
+                                <th class="p-3">ผู้ใช้งาน</th>
+                                <th class="p-3">ยอดเงิน (บาท)</th>
+                                <th class="p-3">เวลาโอน</th>
+                                <th class="p-3">หมายเหตุ</th>
+                                <th class="p-3">สถานะ</th>
+                                <th class="p-3">ดำเนินการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-topup-table-body" class="divide-y divide-slate-100">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ADMIN TAB 3: PRODUCTS & STOCK MANAGEMENT -->
+            <div id="admin-view-products" class="hidden space-y-6">
+                <!-- Add Product Form -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 space-y-4">
+                    <h3 class="text-lg font-bold text-slate-800">เพิ่ม / แก้ไขรายการสินค้า</h3>
+                    <form onsubmit="handleProductSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="hidden" id="admin-prod-id">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">ชื่อสินค้า *</label>
+                            <input type="text" id="admin-prod-title" required placeholder="เช่น Netflix Premium 1 Month" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1">ราคา (บาท) *</label>
+                            <input type="number" step="0.01" id="admin-prod-price" required placeholder="เช่น 150" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">URL รูปภาพสินค้า *</label>
+                            <input type="text" id="admin-prod-image" required placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-700 mb-1">รายละเอียดสินค้า</label>
+                            <textarea id="admin-prod-desc" rows="2" placeholder="รายละเอียดหรือประกัน..." class="w-full px-4 py-2 rounded-xl border border-slate-200 text-sm"></textarea>
+                        </div>
+                        <div class="md:col-span-2 flex gap-2">
+                            <button type="submit" class="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm transition-all">
+                                บันทึกสินค้า
+                            </button>
+                            <button type="button" onclick="resetProductForm()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm">
+                                ล้างฟอร์ม
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Products Stock List -->
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 space-y-4">
+                    <h3 class="text-lg font-bold text-slate-800">รายการสินค้าและสต็อกรหัสในระบบ</h3>
+                    <div id="admin-products-list" class="space-y-4">
+                        <!-- Dynamic Products with Stock Keys Manager -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN TAB 4: STORE RULES SETTINGS -->
+            <div id="admin-view-rules" class="hidden bg-white p-6 rounded-3xl border border-slate-200 space-y-4">
+                <h3 class="text-lg font-bold text-slate-800">ตั้งค่ากฎของร้านค้า (แสดงเมื่อลูกค้าสั่งซื้อ)</h3>
+                <form onsubmit="saveRuleSettings(event)" class="space-y-4 max-w-xl">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">ข้อความกฎข้อตกลง</label>
+                        <textarea id="admin-rule-text" rows="5" placeholder="เช่น 1. ห้ามเปลี่ยนรหัสผ่าน..." class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">URL รูปภาพกฎของร้านค้า (ถ้ามี)</label>
+                        <input type="text" id="admin-rule-img" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                    </div>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-sm transition-all">
+                        บันทึกกฎร้านค้า
+                    </button>
+                </form>
+            </div>
+
+            <!-- ADMIN TAB 5: DELIVER CODE TO CUSTOMERS -->
+            <div id="admin-view-deliver" class="hidden bg-white p-6 rounded-3xl border border-slate-200 space-y-4">
+                <h3 class="text-lg font-bold text-slate-800">อนุมัติ / ยืนยันการส่งรหัสให้ลูกค้าตามคำสั่งซื้อ</h3>
+                <p class="text-xs text-slate-500">เมื่อลูกค้ารายการสั่งซื้อถูกสร้างขึ้น สามารถตรวจสอบและกดยืนยันการจัดส่งเพื่อส่งมอบรหัสให้ลูกค้า</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-slate-500 font-medium">
+                            <tr>
+                                <th class="p-3">เลขคำสั่งซื้อ</th>
+                                <th class="p-3">ยูสเซอร์ลูกค้า</th>
+                                <th class="p-3">สินค้า</th>
+                                <th class="p-3">ยอดรวม</th>
+                                <th class="p-3">รหัสที่จัดส่ง (อีเมล | รหัส 2ชั้น | อีเมลสำรอง)</th>
+                                <th class="p-3">สถานะการส่ง</th>
+                                <th class="p-3">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-deliver-table-body" class="divide-y divide-slate-100">
+                            <!-- Dynamic Delivery Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ADMIN PIN MODAL (Custom Modal for reliably accepting PIN) -->
+    <div id="modal-admin-pin" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-xl border border-purple-100 relative space-y-4 text-center">
+            <button onclick="closeAdminPinModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            
+            <div>
+                <h3 class="text-lg font-bold text-slate-800">เข้าสู่ระบบแอดมิน</h3>
+                <p class="text-xs text-slate-500">กรอกรหัสผ่านแอดมิน (PIN) เพื่อเข้าสู่ระบบหลังบ้าน</p>
+            </div>
+
+            <form onsubmit="verifyAdminPin(event)" class="space-y-3">
+                <input type="password" id="admin-pin-input" placeholder="กรอกรหัสผ่าน PIN" required class="w-full px-4 py-3 rounded-xl border border-slate-200 text-center font-mono font-bold text-slate-800 text-sm focus:ring-2 focus:ring-purple-400">
+                <button type="submit" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md transition-all">
+                    ยืนยันรหัสผ่าน
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-100 py-6 mt-12 text-center text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p>© PPXLYSTORE - จำหน่าย Account / รับจัดหาทุกแพลตฟอร์ม</p>
+            <button onclick="promptAdminLogin()" class="text-purple-600 hover:underline font-semibold flex items-center gap-1">
+                <i data-lucide="shield-check" class="w-4 h-4"></i> เข้าสู่ระบบแอดมิน
+            </button>
+        </div>
+    </footer>
+
+    <!-- AUTH MODAL -->
+    <div id="modal-auth" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-xl border border-pink-100 relative space-y-6">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="text-center space-y-1">
+                <h3 class="text-2xl font-bold text-slate-800">ยินดีต้อนรับ</h3>
+                <p class="text-xs text-slate-500">กรุณาเข้าสู่ระบบเพื่อดำเนินการสั่งซื้อสินค้า</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">ชื่อผู้ใช้งาน (Username) *</label>
+                    <input type="text" id="auth-username" required placeholder="กรอกชื่อผู้ใช้งาน" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-400 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">รหัสผ่าน (Password) *</label>
+                    <input type="password" id="auth-password" required placeholder="กรอกรหัสผ่าน" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-purple-400 text-sm">
+                </div>
+                <button type="submit" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-400 to-purple-500 hover:from-pink-500 hover:to-purple-600 text-white font-bold text-sm shadow-md transition-all">
+                    เข้าสู่ระบบ / ลงทะเบียน
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- RULE & PURCHASE MODAL (Showed before checkout) -->
+    <div id="modal-rule-checkout" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-xl border border-pink-100 relative space-y-5 max-h-[90vh] overflow-y-auto">
+            <button onclick="closeRuleModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="text-center space-y-1">
+                <div class="w-12 h-12 rounded-2xl bg-pastel-yellow/80 text-amber-700 flex items-center justify-center mx-auto mb-2">
+                    <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">กฎและเงื่อนไขของร้านค้า</h3>
+                <p class="text-xs text-slate-500">กรุณาอ่านและทำความเข้าใจก่อนยืนยันสั่งซื้อ</p>
+            </div>
+
+            <!-- Product Summary -->
+            <div class="bg-purple-50 p-4 rounded-2xl flex items-center gap-3 border border-purple-100">
+                <img id="rule-modal-prod-img" src="" class="w-14 h-14 rounded-xl object-cover bg-white border">
+                <div>
+                    <h4 id="rule-modal-prod-title" class="text-sm font-bold text-slate-800">ชื่อสินค้า</h4>
+                    <p id="rule-modal-prod-price" class="text-xs font-bold text-purple-600">ราคา 0 ฿</p>
+                </div>
+            </div>
+
+            <!-- Rule Image Display -->
+            <div id="rule-img-container" class="hidden">
+                <img id="rule-modal-img" src="" alt="กฎร้านค้า" class="w-full rounded-xl border border-slate-200">
+            </div>
+
+            <!-- Rule Text Display -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed whitespace-pre-line" id="rule-modal-text">
+                - สินค้ามีประกันตามเงื่อนไขที่กำหนด
+                - ห้ามแก้ไขข้อมูลก่อนได้รับอนุญาต
+            </div>
+
+            <div class="flex items-center gap-2 pt-2">
+                <input type="checkbox" id="chk-accept-rule" class="w-4 h-4 text-purple-600 rounded">
+                <label for="chk-accept-rule" class="text-xs font-bold text-slate-700 cursor-pointer">
+                    ฉันได้อ่านและยอมรับกฎของร้านค้าเรียบร้อยแล้ว
+                </label>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeRuleModal()" class="w-1/2 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold">
+                    ยกเลิก
+                </button>
+                <button onclick="confirmPurchase()" class="w-1/2 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-xs font-bold shadow-md">
+                    ยืนยันการสั่งซื้อ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STOCK KEY ADD MODAL (ADMIN) -->
+    <div id="modal-add-stock" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-lg rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-200 relative space-y-4">
+            <button onclick="closeAddStockModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <h3 class="text-lg font-bold text-slate-800">เพิ่มสต็อกรหัสสินค้า (Account Key)</h3>
+            <p class="text-xs text-slate-500">1 รหัส ประกอบด้วย: อีเมล, รหัส 2ชั้น, อีเมลสำรอง</p>
+
+            <form onsubmit="handleSaveStockItem(event)" class="space-y-3">
+                <input type="hidden" id="stock-target-product-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">อีเมล (Email / Username) *</label>
+                    <input type="text" id="stock-input-email" required placeholder="user@gmail.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">รหัส 2ชั้น (2FA / Password) *</label>
+                    <input type="text" id="stock-input-2fa" required placeholder="Pass1234 หรือ 2FA Key" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">อีเมลสำรอง (Backup Email) *</label>
+                    <input type="text" id="stock-input-backup" required placeholder="backup@gmail.com" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm">
+                </div>
+                
+                <button type="submit" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-sm transition-all mt-2">
+                    เพิ่มรหัสเข้าสต็อก
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // INITIAL LOCAL APP STATE (Default Data)
+        // ==========================================
+        const DEFAULT_STORE_CONFIG = {
+            bankName: 'ธนาคารกสิกรไทย (K-Bank)',
+            accountName: 'PPXLY STORE ACCOUNT',
+            accountNumber: '999-8-76543-2',
+            bankImgUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500&auto=format&fit=crop&q=60',
+            ruleText: '1. เมื่อซื้อแล้วสินค้าไม่สามารถเปลี่ยนคืนเป็นเงินสดได้\n2. ประกันรหัส 24 ชม. หลังจากส่งมอบ\n3. ห้ามเปลี่ยนรหัสผ่านหรือข้อมูลการชำระเงินในบัญชี',
+            ruleImgUrl: ''
+        };
+
+        const INITIAL_PRODUCTS = [
+            {
+                id: 'prod-1',
+                title: 'Netflix Premium 4K (1 Month)',
+                price: 139,
+                image: 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500&auto=format&fit=crop&q=60',
+                description: 'จอส่วนตัว คมชัด 4K รับประกันตลอดการใช้งาน 30 วัน',
+                keys: [
+                    { id: 'k1', email: 'netflix1@ppxly.com', twoFactor: 'Pass9876', backupEmail: 'rec1@ppxly.com', isUsed: false },
+                    { id: 'k2', email: 'netflix2@ppxly.com', twoFactor: 'Pass5432', backupEmail: 'rec2@ppxly.com', isUsed: false }
+                ]
+            },
+            {
+                id: 'prod-2',
+                title: 'YouTube Premium Private (1 Month)',
+                price: 59,
+                image: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60',
+                description: 'ดึงเข้าครอบครัว ไม่มีโฆษณาคั่น ฟังเพลง YouTube Music ได้',
+                keys: [
+                    { id: 'k3', email: 'yt1@ppxly.com', twoFactor: 'YtPass111', backupEmail: 'ytrec1@ppxly.com', isUsed: false }
+                ]
+            },
+            {
+                id: 'prod-3',
+                title: 'Canva Pro (1 Year)',
+                price: 199,
+                image: 'https://images.unsplash.com/photo-1626785774573-4b799315345d?w=500&auto=format&fit=crop&q=60',
+                description: 'สิทธิ์ใช้งานปลดล็อกทุกเทมเพลต ฟอนต์ และมัลติมีเดีย Pro',
+                keys: []
+            }
+        ];
+
+        // State Manager with LocalStorage fallback
+        let storeConfig = JSON.parse(localStorage.getItem('ppxly_store_config')) || DEFAULT_STORE_CONFIG;
+        let products = JSON.parse(localStorage.getItem('ppxly_products')) || INITIAL_PRODUCTS;
+        let topupRequests = JSON.parse(localStorage.getItem('ppxly_topups')) || [];
+        let orders = JSON.parse(localStorage.getItem('ppxly_orders')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('ppxly_current_user')) || null;
+        let users = JSON.parse(localStorage.getItem('ppxly_users')) || {};
+
+        let selectedProductForPurchase = null;
+
+        // Initialize App
+        window.onload = function() {
+            lucide.createIcons();
+            updateUIState();
+            renderProductsCatalog();
+            renderMyOrders();
+        };
+
+        function saveData() {
+            localStorage.setItem('ppxly_store_config', JSON.stringify(storeConfig));
+            localStorage.setItem('ppxly_products', JSON.stringify(products));
+            localStorage.setItem('ppxly_topups', JSON.stringify(topupRequests));
+            localStorage.setItem('ppxly_orders', JSON.stringify(orders));
+            localStorage.setItem('ppxly_users', JSON.stringify(users));
+            if (currentUser) {
+                localStorage.setItem('ppxly_current_user', JSON.stringify(currentUser));
+            } else {
+                localStorage.removeItem('ppxly_current_user');
+            }
+        }
+
+        function switchTab(tab) {
+            document.getElementById('view-shop').classList.add('hidden');
+            document.getElementById('view-topup').classList.add('hidden');
+            document.getElementById('view-my-orders').classList.add('hidden');
+            document.getElementById('view-admin').classList.add('hidden');
+
+            if (tab === 'shop') document.getElementById('view-shop').classList.remove('hidden');
+            if (tab === 'topup') {
+                if (!currentUser) return openAuthModal();
+                document.getElementById('view-topup').classList.remove('hidden');
+            }
+            if (tab === 'my-orders') {
+                if (!currentUser) return openAuthModal();
+                renderMyOrders();
+                document.getElementById('view-my-orders').classList.remove('hidden');
+            }
+        }
+
+        function switchAdminTab(tab) {
+            document.getElementById('admin-view-account').classList.add('hidden');
+            document.getElementById('admin-view-topups').classList.add('hidden');
+            document.getElementById('admin-view-products').classList.add('hidden');
+            document.getElementById('admin-view-rules').classList.add('hidden');
+            document.getElementById('admin-view-deliver').classList.add('hidden');
+
+            document.getElementById(`admin-view-${tab}`).classList.remove('hidden');
+
+            if (tab === 'account') loadAdminBankSettings();
+            if (tab === 'topups') renderAdminTopups();
+            if (tab === 'products') renderAdminProductsList();
+            if (tab === 'rules') loadAdminRules();
+            if (tab === 'deliver') renderAdminDeliveries();
+        }
+
+        function openAuthModal() {
+            document.getElementById('modal-auth').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('modal-auth').classList.add('hidden');
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const u = document.getElementById('auth-username').value.trim();
+            const p = document.getElementById('auth-password').value.trim();
+
+            if (!u || !p) return showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+
+            if (users[u]) {
+                if (users[u].password !== p) {
+                    return showToast('รหัสผ่านไม่ถูกต้อง', 'error');
+                }
+                currentUser = { username: u, credit: users[u].credit };
+                showToast(`ยินดีต้อนรับกลับ คุณ ${u}`);
+            } else {
+                users[u] = { password: p, credit: 0.00 };
+                currentUser = { username: u, credit: 0.00 };
+                showToast(`ลงทะเบียนผู้ใช้ ${u} สำเร็จ`);
+            }
+
+            saveData();
+            updateUIState();
+            closeAuthModal();
+        }
+
+        function logout() {
+            currentUser = null;
+            saveData();
+            updateUIState();
+            switchTab('shop');
+            showToast('ออกจากระบบเรียบร้อย');
+        }
+
+        function updateUIState() {
+            if (currentUser) {
+                // sync latest user credit
+                if (users[currentUser.username]) {
+                    currentUser.credit = users[currentUser.username].credit;
+                }
+                document.getElementById('user-info-bar').classList.remove('hidden');
+                document.getElementById('btn-login-modal').classList.add('hidden');
+                document.getElementById('display-username').innerText = currentUser.username;
+                document.getElementById('display-credit').innerText = currentUser.credit.toFixed(2);
+            } else {
+                document.getElementById('user-info-bar').classList.add('hidden');
+                document.getElementById('btn-login-modal').classList.remove('hidden');
+            }
+
+            // Sync Bank Info Display
+            document.getElementById('bank-name-display').innerText = storeConfig.bankName;
+            document.getElementById('account-name-display').innerText = storeConfig.accountName;
+            document.getElementById('account-number-display').innerText = storeConfig.accountNumber;
+            if (storeConfig.bankImgUrl) {
+                document.getElementById('topup-bank-img-container').classList.remove('hidden');
+                document.getElementById('topup-bank-img').src = storeConfig.bankImgUrl;
+            } else {
+                document.getElementById('topup-bank-img-container').classList.add('hidden');
+            }
+
+            // Badges in admin
+            const pendingTopups = topupRequests.filter(t => t.status === 'pending').length;
+            const badgeTopup = document.getElementById('pending-topups-badge');
+            if (pendingTopups > 0) {
+                badgeTopup.innerText = pendingTopups;
+                badgeTopup.classList.remove('hidden');
+            } else {
+                badgeTopup.classList.add('hidden');
+            }
+
+            const pendingDeliveries = orders.filter(o => o.status === 'pending').length;
+            const badgeDeliver = document.getElementById('pending-orders-badge');
+            if (pendingDeliveries > 0) {
+                badgeDeliver.innerText = pendingDeliveries;
+                badgeDeliver.classList.remove('hidden');
+            } else {
+                badgeDeliver.classList.add('hidden');
+            }
+        }
+
+        function promptAdminLogin() {
+            // Open modal instead of prompt() to avoid iFrame restrictions on platforms like CodePen/Canvas
+            document.getElementById('modal-admin-pin').classList.remove('hidden');
+            document.getElementById('admin-pin-input').value = '';
+            document.getElementById('admin-pin-input').focus();
+        }
+
+        function closeAdminPinModal() {
+            document.getElementById('modal-admin-pin').classList.add('hidden');
+        }
+
+        function verifyAdminPin(e) {
+            e.preventDefault();
+            const pin = document.getElementById('admin-pin-input').value.trim();
+            if (pin === 'spprt 11') {
+                closeAdminPinModal();
+                showToast('เข้าสู่ระบบแอดมินสำเร็จ');
+                switchTab('admin');
+                document.getElementById('view-admin').classList.remove('hidden');
+                switchAdminTab('account');
+            } else {
+                showToast('รหัสผ่านแอดมินไม่ถูกต้อง', 'error');
+            }
+        }
+
+        function exitAdmin() {
+            switchTab('shop');
+            showToast('ออกจากระบบแอดมินเรียบร้อย');
+        }
+
+        function renderProductsCatalog() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = '';
+
+            products.forEach(p => {
+                const availableStock = p.keys.filter(k => !k.isUsed).length;
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col group";
+                
+                card.innerHTML = `
+                    <div class="relative h-48 overflow-hidden bg-slate-100">
+                        <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onerror="this.src='https://placehold.co/400x300/E8D7FF/800080?text=No+Image'">
+                        <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold ${availableStock > 0 ? 'text-emerald-600' : 'text-red-500'}">
+                            ${availableStock > 0 ? `คงเหลือ ${availableStock} ชิ้น` : 'สินค้าหมด'}
+                        </div>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                        <div class="space-y-1">
+                            <h3 class="font-bold text-slate-800 text-base line-clamp-1">${p.title}</h3>
+                            <p class="text-xs text-slate-500 line-clamp-2">${p.description || 'ไม่มีรายละเอียด'}</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-50">
+                            <div>
+                                <span class="text-xs text-slate-400 block">ราคา</span>
+                                <span class="text-lg font-extrabold text-purple-600">${p.price.toFixed(2)} ฿</span>
+                            </div>
+                            <button onclick="initiatePurchase('${p.id}')" ${availableStock === 0 ? 'disabled' : ''} class="px-4 py-2.5 rounded-2xl ${availableStock > 0 ? 'bg-gradient-to-r from-pink-400 to-purple-500 hover:from-pink-500 hover:to-purple-600 text-white shadow-md shadow-pink-100' : 'bg-slate-200 text-slate-400 cursor-not-allowed'} text-xs font-bold transition-all flex items-center gap-1">
+                                <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> สั่งซื้อสินค้า
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function initiatePurchase(prodId) {
+            if (!currentUser) return openAuthModal();
+
+            const p = products.find(item => item.id === prodId);
+            if (!p) return;
+
+            const stock = p.keys.filter(k => !k.isUsed).length;
+            if (stock <= 0) return showToast('สินค้าชิ้นนี้หมดแล้ว', 'error');
+
+            selectedProductForPurchase = p;
+
+            // Populate Rule Modal
+            document.getElementById('rule-modal-prod-img').src = p.image;
+            document.getElementById('rule-modal-prod-title').innerText = p.title;
+            document.getElementById('rule-modal-prod-price').innerText = `ราคา ${p.price.toFixed(2)} ฿`;
+            document.getElementById('rule-modal-text').innerText = storeConfig.ruleText || 'ไม่มีข้อกำหนดเพิ่มเติม';
+            
+            if (storeConfig.ruleImgUrl) {
+                document.getElementById('rule-img-container').classList.remove('hidden');
+                document.getElementById('rule-modal-img').src = storeConfig.ruleImgUrl;
+            } else {
+                document.getElementById('rule-img-container').classList.add('hidden');
+            }
+
+            document.getElementById('chk-accept-rule').checked = false;
+            document.getElementById('modal-rule-checkout').classList.remove('hidden');
+        }
+
+        function closeRuleModal() {
+            document.getElementById('modal-rule-checkout').classList.add('hidden');
+            selectedProductForPurchase = null;
+        }
+
+        function confirmPurchase() {
+            const accept = document.getElementById('chk-accept-rule').checked;
+            if (!accept) {
+                return showToast('กรุณากดยินยอมและเข้าใจกฎของร้านค้าก่อนดำเนินการ', 'error');
+            }
+
+            const p = selectedProductForPurchase;
+            if (!p) return;
+
+            if (currentUser.credit < p.price) {
+                closeRuleModal();
+                showToast('เครดิตของคุณไม่เพียงพอ กรุณาเติมเครดิตก่อนสั่งซื้อ', 'error');
+                return switchTab('topup');
+            }
+
+            // Deduct Credit immediately
+            users[currentUser.username].credit -= p.price;
+            currentUser.credit = users[currentUser.username].credit;
+
+            // Create Order
+            const newOrder = {
+                id: 'ORD-' + Date.now().toString().slice(-6),
+                username: currentUser.username,
+                productId: p.id,
+                productTitle: p.title,
+                price: p.price,
+                date: new Date().toLocaleString('th-TH'),
+                status: 'pending', // 'pending' or 'delivered'
+                deliveredKey: null
+            };
+
+            orders.unshift(newOrder);
+            saveData();
+            updateUIState();
+            closeRuleModal();
+
+            showToast('สั่งซื้อสำเร็จ! กรุณารอแอนมินส่งมอบรหัสคำสั่งซื้อ');
+            switchTab('my-orders');
+        }
+
+        function renderMyOrders() {
+            const container = document.getElementById('orders-list-container');
+            container.innerHTML = '';
+
+            if (!currentUser) return;
+
+            const myOrders = orders.filter(o => o.username === currentUser.username);
+
+            if (myOrders.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 bg-white rounded-3xl border border-slate-100">
+                        <i data-lucide="package-open" class="w-12 h-12 text-slate-300 mx-auto mb-2"></i>
+                        <p class="text-slate-500 font-medium text-sm">ยังไม่มีรายการสั่งซื้อ</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            myOrders.forEach(o => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-6 rounded-3xl border border-pink-100 shadow-sm space-y-4";
+
+                let keyBoxContent = '';
+                if (o.status === 'delivered' && o.deliveredKey) {
+                    const rawKeyText = `อีเมล: ${o.deliveredKey.email} | รหัส 2ชั้น: ${o.deliveredKey.twoFactor} | อีเมลสำรอง: ${o.deliveredKey.backupEmail}`;
+                    keyBoxContent = `
+                        <div class="bg-purple-50/80 p-4 rounded-2xl border border-purple-200 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-purple-700 flex items-center gap-1">
+                                    <i data-lucide="key" class="w-4 h-4"></i> ข้อมูลรหัสสินค้าที่ได้รับ:
+                                </span>
+                                <button onclick="copyRawText('${rawKeyText.replace(/'/g, "\\'")}', 'คัดลอกรหัสสำเร็จ!')" class="px-3 py-1 rounded-lg bg-purple-600 text-white text-xs font-semibold hover:bg-purple-700 transition-all flex items-center gap-1">
+                                    <i data-lucide="copy" class="w-3 h-3"></i> คัดลอกรหัสทั้งหมด
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs font-mono bg-white p-3 rounded-xl border border-purple-100">
+                                <div><span class="text-slate-400 block font-sans">อีเมล:</span><span class="font-bold text-slate-800">${o.deliveredKey.email}</span></div>
+                                <div><span class="text-slate-400 block font-sans">รหัส 2ชั้น:</span><span class="font-bold text-slate-800">${o.deliveredKey.twoFactor}</span></div>
+                                <div><span class="text-slate-400 block font-sans">อีเมลสำรอง:</span><span class="font-bold text-slate-800">${o.deliveredKey.backupEmail}</span></div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    keyBoxContent = `
+                        <div class="bg-amber-50 p-3.5 rounded-2xl border border-amber-200 text-xs text-amber-800 flex items-center gap-2">
+                            <i data-lucide="clock" class="w-4 h-4 text-amber-600"></i>
+                            กำลังรอแอดมินตรวจสอบและยืนยันการจัดส่งรหัสเข้าสู่ระบบ...
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                        <div>
+                            <span class="text-xs font-bold text-slate-400">เลขคำสั่งซื้อ: ${o.id}</span>
+                            <h3 class="text-base font-bold text-slate-800">${o.productTitle}</h3>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 block">${o.date}</span>
+                            <span class="text-sm font-extrabold text-purple-600">${o.price.toFixed(2)} ฿</span>
+                        </div>
+                    </div>
+                    ${keyBoxContent}
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function handleTopupSubmit(e) {
+            e.preventDefault();
+            if (!currentUser) return openAuthModal();
+
+            const amount = parseFloat(document.getElementById('topup-amount').value);
+            const time = document.getElementById('topup-time').value.trim();
+            const note = document.getElementById('topup-note').value.trim();
+
+            if (isNaN(amount) || amount <= 0 || !time) {
+                return showToast('กรุณากรอกข้อมูลให้ถูกต้อง', 'error');
+            }
+
+            topupRequests.unshift({
+                id: 'TP-' + Date.now().toString().slice(-6),
+                username: currentUser.username,
+                amount: amount,
+                time: time,
+                note: note,
+                status: 'pending',
+                date: new Date().toLocaleString('th-TH')
+            });
+
+            saveData();
+            updateUIState();
+            document.getElementById('topup-form').reset();
+            showToast('ส่งข้อมูลแจ้งเติมเครดิตแล้ว กรุณารอแอดมินตรวจสอบอนุมัติ');
+        }
+
+        function loadAdminBankSettings() {
+            document.getElementById('admin-bank-name').value = storeConfig.bankName;
+            document.getElementById('admin-account-name').value = storeConfig.accountName;
+            document.getElementById('admin-account-number').value = storeConfig.accountNumber;
+            document.getElementById('admin-bank-img-url').value = storeConfig.bankImgUrl;
+        }
+
+        function saveBankSettings(e) {
+            e.preventDefault();
+            storeConfig.bankName = document.getElementById('admin-bank-name').value.trim();
+            storeConfig.accountName = document.getElementById('admin-account-name').value.trim();
+            storeConfig.accountNumber = document.getElementById('admin-account-number').value.trim();
+            storeConfig.bankImgUrl = document.getElementById('admin-bank-img-url').value.trim();
+
+            saveData();
+            updateUIState();
+            showToast('บันทึกข้อมูลบัญชีเรียบร้อย');
+        }
+
+        function renderAdminTopups() {
+            const tbody = document.getElementById('admin-topup-table-body');
+            tbody.innerHTML = '';
+
+            if (topupRequests.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-xs text-slate-400">ไม่มีรายการแจ้งเติมเครดิต</td></tr>`;
+                return;
+            }
+
+            topupRequests.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50";
+
+                let actionBtn = '';
+                if (t.status === 'pending') {
+                    actionBtn = `
+                        <div class="flex gap-1">
+                            <button onclick="approveTopup('${t.id}')" class="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold">อนุมัติ</button>
+                            <button onclick="rejectTopup('${t.id}')" class="px-3 py-1 rounded-lg bg-red-500 hover:bg-red-600 text-white text-xs font-bold">ปฏิเสธ</button>
+                        </div>
+                    `;
+                } else {
+                    actionBtn = `<span class="text-xs text-slate-400">เสร็จสิ้น</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-slate-700">${t.username}</td>
+                    <td class="p-3 font-bold text-purple-600">${t.amount.toFixed(2)}</td>
+                    <td class="p-3 text-xs text-slate-500">${t.time}</td>
+                    <td class="p-3 text-xs text-slate-500">${t.note || '-'}</td>
+                    <td class="p-3 text-xs font-bold ${t.status === 'approved' ? 'text-emerald-600' : t.status === 'rejected' ? 'text-red-500' : 'text-amber-500'}">
+                        ${t.status === 'approved' ? 'อนุมัติแล้ว' : t.status === 'rejected' ? 'ปฏิเสธแล้ว' : 'รอตรวจสอบ'}
+                    </td>
+                    <td class="p-3">${actionBtn}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function approveTopup(id) {
+            const req = topupRequests.find(t => t.id === id);
+            if (!req) return;
+
+            req.status = 'approved';
+            if (users[req.username]) {
+                users[req.username].credit += req.amount;
+            }
+
+            saveData();
+            updateUIState();
+            renderAdminTopups();
+            showToast(`อนุมัติเติมเงิน ${req.amount} ฿ ให้แก่ ${req.username} เรียบร้อย`);
+        }
+
+        function rejectTopup(id) {
+            const req = topupRequests.find(t => t.id === id);
+            if (!req) return;
+
+            req.status = 'rejected';
+            saveData();
+            updateUIState();
+            renderAdminTopups();
+            showToast('ปฏิเสธรายการเติมเงินแล้ว');
+        }
+
+        function handleProductSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('admin-prod-id').value;
+            const title = document.getElementById('admin-prod-title').value.trim();
+            const price = parseFloat(document.getElementById('admin-prod-price').value);
+            const image = document.getElementById('admin-prod-image').value.trim();
+            const desc = document.getElementById('admin-prod-desc').value.trim();
+
+            if (editId) {
+                const prod = products.find(p => p.id === editId);
+                if (prod) {
+                    prod.title = title;
+                    prod.price = price;
+                    prod.image = image;
+                    prod.description = desc;
+                }
+            } else {
+                products.push({
+                    id: 'prod-' + Date.now().toString().slice(-6),
+                    title: title,
+                    price: price,
+                    image: image,
+                    description: desc,
+                    keys: []
+                });
+            }
+
+            saveData();
+            renderProductsCatalog();
+            renderAdminProductsList();
+            resetProductForm();
+            showToast('บันทึกสินค้าเรียบร้อย');
+        }
+
+        function editProduct(id) {
+            const p = products.find(item => item.id === id);
+            if (!p) return;
+            document.getElementById('admin-prod-id').value = p.id;
+            document.getElementById('admin-prod-title').value = p.title;
+            document.getElementById('admin-prod-price').value = p.price;
+            document.getElementById('admin-prod-image').value = p.image;
+            document.getElementById('admin-prod-desc').value = p.description;
+            showToast('ดึงข้อมูลสินค้าลงฟอร์มแก้ไข');
+        }
+
+        function deleteProduct(id) {
+            if (confirm('คุณต้องการลบสินค้านี้หรือไม่?')) {
+                products = products.filter(p => p.id !== id);
+                saveData();
+                renderProductsCatalog();
+                renderAdminProductsList();
+                showToast('ลบสินค้าเรียบร้อย');
+            }
+        }
+
+        function resetProductForm() {
+            document.getElementById('admin-prod-id').value = '';
+            document.getElementById('admin-prod-title').value = '';
+            document.getElementById('admin-prod-price').value = '';
+            document.getElementById('admin-prod-image').value = '';
+            document.getElementById('admin-prod-desc').value = '';
+        }
+
+        function renderAdminProductsList() {
+            const container = document.getElementById('admin-products-list');
+            container.innerHTML = '';
+
+            products.forEach(p => {
+                const availableKeys = p.keys.filter(k => !k.isUsed);
+                const card = document.createElement('div');
+                card.className = "border border-slate-200 p-4 rounded-2xl bg-slate-50 space-y-3";
+
+                let keyRows = '';
+                if (p.keys.length === 0) {
+                    keyRows = `<p class="text-xs text-slate-400 italic">ไม่มีรหัสในสต็อก</p>`;
+                } else {
+                    keyRows = p.keys.map(k => `
+                        <div class="flex items-center justify-between text-xs bg-white p-2 rounded-lg border border-slate-200">
+                            <div class="font-mono overflow-x-auto space-x-2">
+                                <span class="font-bold text-slate-800">${k.email}</span> |
+                                <span class="text-purple-600">${k.twoFactor}</span> |
+                                <span class="text-slate-500">${k.backupEmail}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded text-[10px] ${k.isUsed ? 'bg-slate-200 text-slate-500' : 'bg-emerald-100 text-emerald-700 font-bold'}">
+                                    ${k.isUsed ? 'ใช้แล้ว' : 'พร้อมขาย'}
+                                </span>
+                                <button onclick="deleteStockKey('${p.id}', '${k.id}')" class="text-red-500 hover:text-red-700"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                card.innerHTML = `
+                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                        <div class="flex items-center gap-3">
+                            <img src="${p.image}" class="w-10 h-10 rounded-lg object-cover bg-white border">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm">${p.title}</h4>
+                                <span class="text-xs text-purple-600 font-bold">${p.price.toFixed(2)} ฿</span>
+                                <span class="text-xs text-slate-500"> (คงเหลือ ${availableKeys.length} รหัส)</span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="openAddStockModal('${p.id}')" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i> เพิ่มสต็อกรหัส
+                            </button>
+                            <button onclick="editProduct('${p.id}')" class="px-3 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold">แก้ไข</button>
+                            <button onclick="deleteProduct('${p.id}')" class="px-3 py-1.5 rounded-xl bg-red-100 hover:bg-red-200 text-red-600 text-xs font-bold">ลบ</button>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5 pt-1">
+                        <p class="text-xs font-bold text-slate-600">รายการรหัสสต็อกทั้งหมด:</p>
+                        ${keyRows}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        function openAddStockModal(prodId) {
+            document.getElementById('stock-target-product-id').value = prodId;
+            document.getElementById('modal-add-stock').classList.remove('hidden');
+        }
+
+        function closeAddStockModal() {
+            document.getElementById('modal-add-stock').classList.add('hidden');
+        }
+
+        function handleSaveStockItem(e) {
+            e.preventDefault();
+            const prodId = document.getElementById('stock-target-product-id').value;
+            const email = document.getElementById('stock-input-email').value.trim();
+            const twoFactor = document.getElementById('stock-input-2fa').value.trim();
+            const backup = document.getElementById('stock-input-backup').value.trim();
+
+            const p = products.find(item => item.id === prodId);
+            if (p) {
+                p.keys.push({
+                    id: 'k-' + Date.now().toString().slice(-6),
+                    email: email,
+                    twoFactor: twoFactor,
+                    backupEmail: backup,
+                    isUsed: false
+                });
+
+                saveData();
+                renderProductsCatalog();
+                renderAdminProductsList();
+                closeAddStockModal();
+                document.getElementById('stock-input-email').value = '';
+                document.getElementById('stock-input-2fa').value = '';
+                document.getElementById('stock-input-backup').value = '';
+                showToast('เพิ่มรหัสสินค้าเข้าสต็อกสำเร็จ!');
+            }
+        }
+
+        function deleteStockKey(prodId, keyId) {
+            const p = products.find(item => item.id === prodId);
+            if (p) {
+                p.keys = p.keys.filter(k => k.id !== keyId);
+                saveData();
+                renderProductsCatalog();
+                renderAdminProductsList();
+                showToast('ลบรหัสออกจากสต็อกแล้ว');
+            }
+        }
+
+        function loadAdminRules() {
+            document.getElementById('admin-rule-text').value = storeConfig.ruleText || '';
+            document.getElementById('admin-rule-img').value = storeConfig.ruleImgUrl || '';
+        }
+
+        function saveRuleSettings(e) {
+            e.preventDefault();
+            storeConfig.ruleText = document.getElementById('admin-rule-text').value;
+            storeConfig.ruleImgUrl = document.getElementById('admin-rule-img').value.trim();
+
+            saveData();
+            showToast('บันทึกกฎของร้านค้าเรียบร้อย');
+        }
+
+        function renderAdminDeliveries() {
+            const tbody = document.getElementById('admin-deliver-table-body');
+            tbody.innerHTML = '';
+
+            if (orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center p-4 text-xs text-slate-400">ไม่มีคำสั่งซื้อในระบบ</td></tr>`;
+                return;
+            }
+
+            orders.forEach(o => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50";
+
+                const prod = products.find(p => p.id === o.productId);
+                const unusedKeys = prod ? prod.keys.filter(k => !k.isUsed) : [];
+
+                let keySelectHtml = '';
+                if (o.status === 'delivered') {
+                    keySelectHtml = `<div class="font-mono text-xs text-purple-700 font-bold">${o.deliveredKey.email} | ${o.deliveredKey.twoFactor} | ${o.deliveredKey.backupEmail}</div>`;
+                } else {
+                    if (unusedKeys.length > 0) {
+                        keySelectHtml = `
+                            <select id="select-key-${o.id}" class="px-2 py-1.5 rounded-lg border border-slate-200 text-xs w-full max-w-xs">
+                                ${unusedKeys.map(k => `<option value="${k.id}">${k.email} | ${k.twoFactor}</option>`).join('')}
+                            </select>
+                        `;
+                    } else {
+                        keySelectHtml = `<span class="text-xs text-red-500 font-bold">สต็อกสินค้าหมด!</span>`;
+                    }
+                }
+
+                let actionBtn = '';
+                if (o.status === 'delivered') {
+                    actionBtn = `<span class="text-xs text-emerald-600 font-bold">ส่งมอบแล้ว</span>`;
+                } else {
+                    actionBtn = `
+                        <button onclick="deliverOrderKey('${o.id}')" ${unusedKeys.length === 0 ? 'disabled' : ''} class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold disabled:opacity-50">
+                            ยืนยันส่งรหัส
+                        </button>
+                    `;
+                }
+
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-xs text-slate-500">${o.id}</td>
+                    <td class="p-3 font-bold text-slate-800">${o.username}</td>
+                    <td class="p-3 text-xs font-bold text-slate-700">${o.productTitle}</td>
+                    <td class="p-3 text-xs font-bold text-purple-600">${o.price.toFixed(2)} ฿</td>
+                    <td class="p-3">${keySelectHtml}</td>
+                    <td class="p-3 text-xs font-bold ${o.status === 'delivered' ? 'text-emerald-600' : 'text-amber-500'}">
+                        ${o.status === 'delivered' ? 'ส่งมอบแล้ว' : 'รอการส่งรหัส'}
+                    </td>
+                    <td class="p-3">${actionBtn}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function deliverOrderKey(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+
+            const selectEl = document.getElementById(`select-key-${orderId}`);
+            if (!selectEl) return showToast('ไม่มีรหัสพร้อมใช้งานในสต็อก', 'error');
+
+            const selectedKeyId = selectEl.value;
+            const prod = products.find(p => p.id === order.productId);
+            if (!prod) return;
+
+            const keyObj = prod.keys.find(k => k.id === selectedKeyId);
+            if (!keyObj) return;
+
+            // Mark Key as used and bind to order
+            keyObj.isUsed = true;
+            order.status = 'delivered';
+            order.deliveredKey = {
+                email: keyObj.email,
+                twoFactor: keyObj.twoFactor,
+                backupEmail: keyObj.backupEmail
+            };
+
+            saveData();
+            updateUIState();
+            renderAdminDeliveries();
+            renderProductsCatalog();
+            showToast(`ยืนยันส่งรหัสให้ผู้ใช้ ${order.username} เรียบร้อยแล้ว!`);
+        }
+
+        function showToast(msg, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto px-4 py-3 rounded-2xl text-xs font-bold shadow-lg transition-all transform translate-y-2 opacity-0 flex items-center gap-2 ${type === 'success' ? 'bg-slate-900 text-white' : 'bg-red-500 text-white'}`;
+            
+            toast.innerHTML = `
+                <i data-lucide="${type === 'success' ? 'check-circle-2' : 'alert-circle'}" class="w-4 h-4"></i>
+                <span>${msg}</span>
+            `;
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function copyToClipboard(elementId, successMsg) {
+            const text = document.getElementById(elementId).innerText;
+            copyRawText(text, successMsg);
+        }
+
+        function copyRawText(text, successMsg) {
+            const temp = document.createElement('textarea');
+            temp.value = text;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+            showToast(successMsg || 'คัดลอกเรียบร้อยแล้ว!');
+        }
+    </script>
+</body>
+</html>
